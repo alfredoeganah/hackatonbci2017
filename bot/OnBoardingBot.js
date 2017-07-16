@@ -7,17 +7,6 @@ var request = require('request-promise').defaults({ encoding: null });
 function validateFaceExists(url){
     var https = require('https');
 
-    /**
-     * HOW TO Make an HTTP Call - GET
-     */
-    // options for GET
-    var optionsget = {
-        host : 'api-us.faceplusplus.com', 
-        // (no http/https !)
-        port : 443,
-        path : '/facepp/v3/detect', 
-        method : 'POST' 
-    };
     var Client = require('node-rest-client').Client;
     
     var client = new Client();
@@ -65,7 +54,7 @@ bot.dialog('/', [
     function (session, results) {
         if (results.response) {
             builder.Prompts.attachment(session,` Ok, Paso 1: Envianos una Foto del Anverso de tu RUT`);
-            session.send('Espere un momento por favor...');
+            
         }
         else {
             session.endDialog('Ok, vuelva cuando tengas todos los antecedentes.Adios!');
@@ -75,10 +64,11 @@ bot.dialog('/', [
     },
     function (session, results) {
         //session.dialogData.nombre = results.response;
+       // session.send('Espere un momento por favor...');
         var msg = session.message;
         if (msg.attachments && msg.attachments.length > 0) {
-        console.log('Atachement URL: '+attachment.contentUrl);
         var attachment = msg.attachments[0];
+        console.log('Atachement URL: '+attachment.contentUrl);
         var fileDownload = request(attachment.contentUrl);
 
         fileDownload.then(
