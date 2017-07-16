@@ -1,6 +1,45 @@
 ﻿var restify = require('restify');
 var builder = require('botbuilder');
 
+var Promise = require('bluebird');
+var request = require('request-promise').defaults({ encoding: null });
+
+function validateFaceExists(url){
+    var https = require('https');
+
+    /**
+     * HOW TO Make an HTTP Call - GET
+     */
+    // options for GET
+    var optionsget = {
+        host : 'api-us.faceplusplus.com', 
+        // (no http/https !)
+        port : 443,
+        path : '/facepp/v3/detect', 
+        method : 'POST' 
+    };
+    var Client = require('node-rest-client').Client;
+    
+    var client = new Client();
+    
+    // set content-type header and data as json in args parameter 
+        var args = {
+            data: { 
+                api_key: "UrByEbGv2ByLzTphxDF-IiK1N1a6pGkh", 
+                api_secret: "ztEAV0RZsSuMnmR5---s_akoMtSLmtZv", 
+                image_url: "https://fbchannel.chattigo.com:8443/examples/indice.jpg" 
+            },
+            headers: { "Content-Type": "application/json" }
+        };
+        
+        client.post("https://api-us.faceplusplus.com/facepp/v3/detect", args, function (data, response) {
+            // parsed response body as js object 
+            console.log(data);
+            // raw response 
+            console.log(response);
+        });
+}
+
 // Levantar restify
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -25,29 +64,64 @@ bot.dialog('/', [
     },
     function (session, results) {
         if (results.response) {
-            session.send(` Ok, Paso 1: Envianos una Foto del Anverso de tu RUT`);
+            builder.Prompts.attachment(session,` Ok, Paso 1: Envianos una Foto del Anverso de tu RUT`);
+            session.send('Espere un momento por favor...');
         }
         else {
-            session.send('Ok, vuelva cuando tengas todos los antecedentes.Adios!');
+            session.endDialog('Ok, vuelva cuando tengas todos los antecedentes.Adios!');
         }
         //session.dialogData.nombre = results.response;
       //  session.send( `Envianos una Foto del Anverso de tu RUT`);
     },
     function (session, results) {
         //session.dialogData.nombre = results.response;
-        session.send( `OK! Paso 2: Ahora envianos una Foto del Reverso de tu RUT`);
+        var msg = session.message;
+        if (msg.attachments && msg.attachments.length > 0) {
+        console.log('Atachement URL: '+attachment.contentUrl);
+        var attachment = msg.attachments[0];
+        var fileDownload = request(attachment.contentUrl);
+
+        fileDownload.then(
+            function (response) {
+
+                // Send reply with attachment type & size
+                var reply = new builder.Message(session)
+                    .text('Attachment of %s type and size of %s bytes received.', attachment.contentType, response.length);
+                session.send(reply);
+
+            }).catch(function (err) {
+                console.log('Error downloading attachment:', { statusCode: err.statusCode, message: err.response.statusMessage });
+            });
+
+            validateFaceExists('url');
+            
+            session.send({
+                text: "You sent:",
+                attachments: [
+                    {
+                        contentType: attachment.contentType,
+                        contentUrl: attachment.contentUrl,
+                        name: attachment.name
+                    }
+                ]
+            });
+        } else {
+            // Echo back users text
+            session.send("You said: %s", session.message.text);
+        }
+        builder.Prompts.attachment(session, `Paso 2: Gracias. Ahora envianos una Foto del Reverso de tu RUT`);
     },
     function (session, results) {
        // session.dialogData.edad = results.response;
-        session.send( `Perfecto!  Paso 3: Ahora envianos una Foto tuya, estilo selfie`);
+        builder.Prompts.attachment(session,`Perfecto!  Paso 3: Ahora envianos una Foto tuya, estilo selfie`);
     },
     function (session, results) {
         //session.dialogData.hora = builder.EntityRecognizer.resolveTime([results.response]);
-        session.send(session, 'ok, Paso 4: ahora pf indicame tu dirección o envíame tu ubicación');
+        builder.Prompts.text(session, 'ok, Paso 4: ahora pf indicame tu dirección o envíame tu ubicación');
     },
     function (session, results) {
        // session.dialogData.preferencia = results.response.entity;
-        session.send(session, 'Paso 5 : dame tu numero de teléfono');
+        builder.Prompts.number(session, 'Paso 5 : dame tu numero de teléfono');
     },
     function (session, results) {
         if (results.response) {
