@@ -100,7 +100,7 @@ bot.dialog('/', [
                 console.log(URL2);
                 req.post(options, function(err,data,response){
                     console.log(err);
-                    console.log(data);
+                    console.log(data.body);
                     console.log(response.body);
                 }); 
             });
@@ -135,7 +135,7 @@ bot.dialog('/', [
             session.send("You said: %s", session.message.text);
         }
         
-        builder.Prompts.attachment(session, `Paso 2: Gracias. Ahora envianos una Foto del Reverso de tu RUT`);
+        builder.Prompts.attachment(session, `Paso 2: Gracias Alfredo. Ahora envianos una Foto del Frente de tu RUT`);
     },
     function (session, results) {
        // session.dialogData.edad = results.response;
@@ -151,7 +151,7 @@ bot.dialog('/', [
     },
     function (session, results) {
         if (results.response) {
-            session.endDialog(`**Parabens! vc ja é cliente do banco **,`);
+            session.endDialog(`Ud. ha sido autorizado, desea contratar una cuenta corriente?`);
         }
         else {
             session.endDialog('Adios!');
