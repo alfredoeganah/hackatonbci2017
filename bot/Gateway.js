@@ -17,11 +17,6 @@ let DID = '154601878382482';
 let MT = 'http://chattigowrapper1247.cloudapp.net/ws/whatsapp/mt.php';
 let QUE = 'http://chattigowrapper1247.cloudapp.net/ws/whatsapp/queue.php'
 
-//WA
-//let DID = '56986161642';
-//let MT = 'http://gru.milk-it.cl/ws/whatsapp/mt.php';
-//let QUE = 'http://gru.milk-it.cl/ws/whatsapp/queue3.php'
-
 function getFromWatermark(){
     var URL = `http://localhost:${PORT}/v3/directline/conversations/${CONVERSATION}/activities`;
     if(WATERMARK) URL+= `?watermark=${WATERMARK}`;
